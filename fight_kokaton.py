@@ -1,9 +1,10 @@
+import math
 import os
+import pygame as pg
 import random
 import sys
 import time
-import math
-import pygame as pg
+
 
 
 WIDTH = 1100  # ゲームウィンドウの幅
@@ -217,6 +218,9 @@ def main():
         for i, bomb in enumerate(bombs):
             if bird.rct.colliderect(bomb.rct):
                 # ゲームオーバー時に，こうかとん画像を切り替え，1秒間表示させる
+                fonto = pg.font.Font(None, 80)
+                txt = fonto.render("Game Over", True, (255, 0, 0))
+                screen.blit(txt, [WIDTH//2-150, HEIGHT//2])
                 bird.change_img(8, screen)
                 pg.display.update()
                 time.sleep(1)
