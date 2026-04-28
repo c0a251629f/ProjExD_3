@@ -164,6 +164,31 @@ class Score:
         self.img = self.fonto.render(f"Score: {self.value}", True, self.color)
         screen.blit(self.img, self.rct) 
 
+class Explosion:
+    """
+    爆発に関するクラス
+    """
+    def __init__(self, bomb: "Bomb"):
+        """
+        爆発画像Surfaceを生成する
+        引数 bomb：爆発する爆弾（Bombインスタンス）
+        """
+        img = pg.image.load("fig/explosion.gif")
+        self.imgs = [img, pg.transform.flip(img, True, True)]
+        self.rct = self.imgs[0].get_rect()
+        self.rct.center = bomb.rct.center
+        self.life = 20
+
+    def update(self, screen: pg.Surface):
+        """
+        爆発画像を切り替えながら画面に表示する
+        引数 screen：画面Surface
+        """
+        self.life -= 1
+        if self.life > 0:
+            screen.blit(self.imgs[(self.life//5) % 2], self.rct)
+
+
 def main():
     pg.display.set_caption("たたかえ！こうかとん")
     screen = pg.display.set_mode((WIDTH, HEIGHT))    
@@ -176,6 +201,7 @@ def main():
     #     bombs.appned(bomb)
     
     beams = []  # ゲーム初期化時にはビームは存在しない
+    explosions = []
     score= Score()
     clock = pg.time.Clock()
     tmr = 0
@@ -196,8 +222,6 @@ def main():
                 txt = fonto.render("Game Over", True, (255, 0, 0))
                 screen.blit(txt, [WIDTH//2-150, HEIGHT//2])
                 bird.change_img(8, screen)
-                pg.display.update()
-                time.sleep(1)
                 return
                 
         # ビームと爆弾の衝突判定（複数ビーム対応）
@@ -206,10 +230,10 @@ def main():
                 if beam is not None and bomb is not None and beam.rct.colliderect(bomb.rct):
                     bird.change_img(6, screen)
                     pg.display.update()
-                    time.sleep(1)
                     beams[j] = None
                     bombs[i] = None
                     score.value += 1
+                    explosions.append(Explosion(bomb))
                     break
         bombs = [bomb for bomb in bombs if bomb is not None]
         beams = [beam for beam in beams if beam is not None]
@@ -221,6 +245,9 @@ def main():
                 beam.update(screen)
         for bomb in bombs:
                 bomb.update(screen)
+        explosions = [explosion for explosion in explosions if explosion.life > 0]
+        for explosion in explosions:
+            explosion.update(screen)
         score.update(screen)
         pg.display.update()
         tmr += 1
